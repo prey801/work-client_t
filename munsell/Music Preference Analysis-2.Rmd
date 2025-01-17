@@ -1,0 +1,602 @@
+---
+title: "The role of personality in shaping music preferences"
+Author: K24091801
+output:
+  html_document:
+    df_print: paged
+---
+
+##Introduction
+
+Music is embedded in our daily lives, shaping how individuals feel, think and connect with the world. From casual listening to moments of deep emotional connection, music has long been recognized as a tool for managing emotions, social bonding and facilitating cultural expression. (Vuust & Kringelbach, 2010) Especially for young people, music is not just seen as a form of entertainment but as a means to self-expression. Music as a form of art, is deeply rooted in culture serving us both for individual or collective experience. Research has highlighted how music plays a role in shaping identities, as young people tend to use music to connect with social groups and express their individuality. Beyond this, music also fosters a sense of belonging or enabling shared memories, playing a critical role in social and cultural interaction. (Laughey, 2006)
+
+Musical preferences can be therefore categorized at different levels using different approaches one of them being music genres. Dorochowicz et al. (2020) have demonstrated how specific personalities resonate better to specific genres such as introverts preferring energetic music like hip-hop while  classical and jazz music for introverts, 
+
+ 
+This foundational understanding of music’s cultural and psychological dimensions raises many questions regarding how individual personality traits influence music preferences among young people. Personality traits, a key area of  psychological studies, shape individuals’ views on life and judgement. On the other hand, music is a fundamental component of culture that reflects broader societal values. Highlighting on the interplay between psychological and cultural dimensions, Albury (2024) conducted a data study on how personal and social factors influence musical taste particularly in understanding how certain variables such as gender or environment shape musical engagement. Renfrow and Levitin (2019) emphasizes the psychological basis of music preferences arguing how personality traits influence the adoption of certain musical genres that align with an individual's identity and values. 
+
+For instance, individuals with reflective tendencies tend to prefer complex genres like jazz, the article highlights how some preferences not only reflect individual psychological traits but broader patterns of cultural engagement.
+ 
+Some studies have suggested that demographic variables significantly influence musical engagement. Gong's (2020) explored the relationship between genre and educational level influences music preferences, finding that male students tend to prefer rock and roll compared to young females showing a preference in classical music. Therefore it is important to analyse how musical preferences not only interact with personality but if in reality demographic factors also play a role in this. Because of this,  Greasley and Lamont (2016) mentioned how music should not be studied as a static expression of taste but as a dynamic reflection of life since our environment tends to affect our opinions. 
+ 
+Despite advancements in understanding the psychology of music significant gaps remain. Most of the existing research is mainly based on theoretical research and little quantitative is added. Moreover, there has been insufficient exploration of how demographic variables like age, gender, and education mediate this relationship. For instance, Gong (2020) and Bonneville-Roussy et al. (2013)  do address gender and age as demographic factors but little research has been done to understand how these variables interact and the correlation to it. 
+ 
+Therefore, this research aims to explore the gaps in understanding how personality traits and demographic variables such as age, gender, environment and daily behaviours influence music preferences among young people. Using larger and more varied samples, this research aims to discover new patterns. The analysis will be of quantitative nature, therefore it will be based on integer variables. 
+
+
+Do demographic variables like age, gender, and education level assossiation the relationship between personality traits and music preferences?
+
+
+##Datasets 
+
+For this project, the data source used is the Young People Survey from Kaggle (Sabo, 2017) containing a .csv file with the dataset. All survey participants were Slovakian nationality, aged between 15-30. . The data contains 1,010 observations on 150 attributes. The dataset contains 608 missing data points on 336 records, with only 674 rows with no missing values.
+
+```{r}
+install.packages("reshape2")
+library(dplyr);
+library(corrplot);
+library(ggplot2);
+library(tidyr);
+library(reshape2)
+
+```
+
+Loading the dataset
+
+```{r}
+data=read.csv("C:/Users/PC/Downloads/archive (1)/responses.csv");
+
+```
+
+Making a copy of the original dataset incase its needed in future 
+```{r}
+responses <- data.frame(data) ;
+
+```
+
+
+##Data Preparation
+
+
+
+
+#Data Cleaning
+
+Firstly, converted the categorical columns with categorical values into numeric values to fit in our analysis methods such as correlation. 
+```{r}
+data$Gender <- recode(data$Gender,"female"=1,"male"=2);
+
+data$Alcohol <- recode(data$Alcohol,"drink a lot"=1,"social drinker"=2,"never"=3);
+
+
+education <- c("currently a primary school pupil"=1, "primary school"=2, "secondary school"=3,
+        "college/bachelor degree"=4,"masters degree"=5,"doctorate degree"=6);
+
+data$Education <- recode(data$Education,!!!education);
+
+
+data$Smoking <- recode(data$Smoking,"tried smoking"=2,"current smoker"=3,
+                       "former smoker"=4,"never smoked"=1);
+
+lying <- c("everytime it suits me"=1,"only to avoid hurting someone"=3,
+        "sometimes"=2,"never"=4);
+
+data$Lying <- recode(data$Lying,!!!lying);
+
+
+data$Internet.usage <- recode(data$Internet.usage,"few hours a day"=3,
+                              "less than an hour a day"=2,
+                              "most of the day"=4,"no time at all"=1);
+
+data$Punctuality <- recode(data$Punctuality,"i am often early"=1,"i am always on time"=2,
+                           "i am often running late"=3);
+
+data$House...block.of.flats <- recode(data$House...block.of.flats,
+                                      "block of flats"=1,"house/bungalow"=2);
+
+data$Village...town <- recode(data$Village...town,"village"=1,"city"=2);
+
+data$Left...right.handed <- recode(data$Left...right.handed,"left handed"=1,
+                                   "right handed"=2);
+
+table(data$Only.child)
+
+data$Only.child <- recode(data$Only.child,"yes"=1,"no"=2)
+
+table(data$Only.child)
+
+```
+I checked... 
+```{r}
+
+table(data$Only.child)
+
+data$Only.child <- recode(data$Only.child,"yes"=1,"no"=2)
+
+table(data$Only.child)
+
+```
+
+
+#Handling Missing Values
+
+Checking missing values
+```{r}
+
+sum(is.na(data));
+
+complete_data=complete.cases(data);
+
+dim(data[complete_data,])
+
+
+```
+
+The sum of missing values is 608
+
+Missing values for variable - this is why i choose exclusion 
+```{r}
+colSums(is.na(data))
+```
+
+
+674 complete rows 
+
+```{r}
+
+data_clean <- data[complete.cases(data), ]
+
+```
+
+Confirming that all the missing values have been replaced
+```{r}
+sum(is.na(data_clean));
+
+complete_data=complete.cases(data_clean);
+
+dim(data_clean[complete_data,])
+```
+
+```{r}
+cat("Original dimensions:", dim(data), "\n")
+cat("Cleaned dimensions:", dim(data_clean), "\n")
+
+```
+
+
+#Converting 
+
+##Data Analysis
+
+
+#Exploratory Data Analysis 
+
+1. Visualizing Music Genre Popularity
+
+```{r}
+
+genre<-data_clean[columns[3:19]];
+
+
+column_averages <- colMeans(genre, na.rm = TRUE)
+
+# Step 2: Sort the column averages in descending order
+sorted_averages <- sort(column_averages, decreasing = TRUE)
+
+# Step 3: Create a bar plot of the sorted averages
+barplot(sorted_averages, 
+        main = "Music Genre Popularity.",  # Title of the plot
+        col = "lightblue",  # Bar color
+        las = 2,  # Rotate axis labels for readability
+        ylab = "Average",  # Label for the y-axis
+        cex.names = 0.8)  # Scale the axis labels for readability
+```
+
+
+Generally, rock music genre is most preferred by most people. On average individuals surveyed have 4.0 preference score for the genre, asserting that the is highly loved among the young people. Pop genre follows closely with an average preference score of 3.5 while Opera and Country are least preferred, respectively. The following graph illustrates genre popularity.
+
+
+2. Music genre preference score by Gender
+
+
+```{r}
+
+genre<-data_clean[columns[3:19]];
+
+gender_genre<-data.frame(data_clean["Gender"],genre);
+
+gender_genre <- gender_genre %>%
+  group_by(Gender) %>%
+  summarize(across(where(is.numeric), mean, na.rm = TRUE))
+
+gender_genre <- gender_genre %>%
+  pivot_longer(cols = -Gender, names_to = "Music_Genre", values_to = "Score")
+gender_genre$Gender <- as.factor(gender_genre$Gender)
+
+# Plot using ggplot2
+ggplot(gender_genre, aes(y =Music_Genre, x =Score, fill = (Gender))) + 
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Music Genre Preference Score by Gender",
+       x = "Music Genre",
+       y = "Average Score") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels
+  theme_minimal() +
+  scale_fill_manual(values = c( "1"= "pink", "2" = "blue")) 
+```
+
+
+
+3. Music genre preference score by Age 
+
+
+```{r}
+age_music <- data_clean[c("Age", "Music")]
+
+age_music <- age_music %>%
+  group_by(Age) %>%
+  summarize(Average = mean(Music))
+
+# View the result
+ggplot(age_music, aes(x = Age, y = Average)) + 
+  geom_bar(stat = "identity", fill = "skyblue") + 
+  labs(title = "Music Preference By Age", x = "Age", y = "Average Preference for Music") +
+  theme_minimal()
+
+genre<-data_clean[columns[3:19]];
+
+age_genre<-data.frame(data_clean["Age"],genre);
+
+age_genre <- age_genre %>%
+  group_by(Age) %>%
+  summarize(across(where(is.numeric), mean, na.rm = TRUE))
+
+age_genre <- age_genre %>%
+  pivot_longer(cols = -Age, names_to = "Music_Genre", values_to = "Score")
+
+# Plot using ggplot2
+ggplot(age_genre, aes(y = Music_Genre, x = Score, fill = as.factor(Age))) + 
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Music Genre Preference Score by Age",
+       x = "Music Genre",
+       y = "Average Score") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels
+  theme_minimal()
+```
+
+
+
+```{r}
+# Creare una colonna per le fasce di età di 5 anni, includendo l'upper bound
+data_clean <- data_clean %>%
+  mutate(Age_Group = cut(Age, 
+                         breaks = seq(floor(min(Age, na.rm = TRUE)), ceiling(max(Age, na.rm = TRUE)) + 1, by = 5),
+                         include.lowest = TRUE, right = FALSE, 
+                         labels = paste0(seq(floor(min(Age, na.rm = TRUE)), ceiling(max(Age, na.rm = TRUE)) - 4, by = 5), 
+                                         "-", 
+                                         seq(floor(min(Age, na.rm = TRUE)) + 5, ceiling(max(Age, na.rm = TRUE)), by = 5))))
+
+# Raggruppare per le fasce di età e calcolare la media delle preferenze musicali
+age_music <- data_clean %>%
+  group_by(Age_Group) %>%
+  summarize(Average = mean(Music, na.rm = TRUE))
+
+# Visualizzazione della preferenza musicale per fasce di età
+ggplot(age_music, aes(x = Age_Group, y = Average)) + 
+  geom_bar(stat = "identity", fill = "skyblue") + 
+  labs(title = "Music Preference By Age Group", x = "Age Group", y = "Average Preference for Music") +
+  theme_minimal()
+
+# Raggruppare per fasce di età e calcolare la media per ogni genere musicale
+genre <- data_clean[columns[3:19]]
+
+age_genre <- data.frame(data_clean["Age_Group"], genre)
+
+age_genre <- age_genre %>%
+  group_by(Age_Group) %>%
+  summarize(across(where(is.numeric), mean, na.rm = TRUE))
+
+age_genre <- age_genre %>%
+  pivot_longer(cols = -Age_Group, names_to = "Music_Genre", values_to = "Score")
+
+# Visualizzazione della preferenza per genere musicale per fasce di età
+ggplot(age_genre, aes(y = Music_Genre, x = Score, fill = Age_Group)) + 
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Music Genre Preference Score by Age Group",
+       x = "Average Score",
+       y = "Music Genre") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Ruotare le etichette dell'asse x
+  theme_minimal()
+```
+
+
+Histogram about rock genre preferences depending on age 
+
+```{r}
+# Calcolare la frequenza degli ascolti del genere "Rock" per fasce di età
+rock_frequency <- data_clean %>%
+  group_by(Age_Group) %>%
+  summarize(Frequency = sum(Rock, na.rm = TRUE))  # Somma degli ascolti del genere Rock per ogni fascia
+
+# Creare il grafico
+ggplot(rock_frequency, aes(x = Age_Group, y = Frequency)) + 
+  geom_bar(stat = "identity", fill = "darkorange") + 
+  labs(title = "Frequency of Rock Music Listening by Age Group",
+       x = "Age Group",
+       y = "Frequency of Rock Listening") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Ruotare le etichette dell'asse x
+```
+
+
+
+
+
+
+4. Music genre preference score by environment 
+
+
+
+
+
+
+
+
+
+#Correlation Analysis 
+
+
+1. Correlation between demographic information and music preference
+
+The graph below shows how demographic information such age, education, gender , and type of residence correlate with individuals music taste.
+
+```{r}
+columns <- c(colnames(data_clean));
+
+#make a subset of the traits columns
+demographics <- data_clean[columns[141:150]]
+music<-data_clean[columns[3:19]]
+
+#Combining Music and demographic subsets
+
+music_demo=data.frame(music, demographics)
+
+corrplot(cor(music_demo));
+```
+From the correlation plot above, there appears to be minimal relationship between person’s  demographic information with respect to their music preferences. However , there is notables relationship between ones’  music preference with where they spend most of their childhood in. Particularly, individuals who spent most of their childhood in the village tend to prefer folk genre. Additionally, individuals who spent most of their childhood in houses/bungalow tend to prefer folk music genre.
+
+
+
+```{r}
+
+# Selezionare i due intervalli di colonne
+demographic_cols <- data_clean[, 141:150]
+music_cols <- data_clean[, 3:19]
+
+# Inizializzare una matrice per salvare i risultati
+correlation_matrix <- matrix(NA, 
+                             nrow = ncol(demographic_cols), 
+                             ncol = ncol(music_cols),
+                             dimnames = list(colnames(demographic_cols), colnames(music_cols)))
+
+# Calcolare la correlazione di Spearman per ogni coppia di colonne
+for (i in 1:ncol(demographic_cols)) {
+  for (j in 1:ncol(music_cols)) {
+    correlation_matrix[i, j] <- cor(demographic_cols[[i]], music_cols[[j]], method = "spearman", use = "complete.obs")
+  }
+}
+
+# Convertire in data frame per una visualizzazione più semplice
+correlation_df <- as.data.frame(as.table(correlation_matrix))
+
+# Stampare la matrice di correlazione
+print(correlation_df)
+
+```
+
+```{r}
+
+correlation_long=melt(correlation_matrix)
+
+# Creare una heatmap della matrice di correlazione
+ggplot(correlation_long, aes(Var1, Var2, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(-1, 1), space = "Lab",
+                       name = "Spearman\nCorrelation") +
+  theme_minimal() +
+  labs(title = "Spearman Correlation Heatmap",
+       x = "Demographic Variables",
+       y = "Music Preferences") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+
+
+
+2. Correlation between personal traits with music preference (SPEARMAN - METTERE UN RANK TRA I DATI )
+
+```{r}
+columns <- c(colnames(data_clean));
+
+#make a subset of the traits columns
+traits <- data_clean[columns[77:133]]
+music<-data_clean[columns[3:19]]
+
+#Combining Music and demographic subsets
+
+music_demo=data.frame(music, traits)
+
+corrplot(cor(music_demo));
+
+```
+
+
+```{r}
+# Create a list to store the person_trait subsets
+person_traits <- list()
+
+# Loop through and create subsets from columns 77 to 133, with intervals of 5
+for (i in seq(77, 129, by = 10)) {
+  end_index <- min(i + 4, 133)  # Ensure we don't go beyond column 133
+  person_traits[[length(person_traits) + 1]] <- data_clean[columns[i:end_index]]
+}
+
+# Now create music_trait datasets and plot correlations dynamically
+for (i in 1:length(person_traits)) {
+  music_trait <- data.frame(music, person_traits[[i]])
+  corrplot(cor(music_trait))
+}
+
+```
+just talk about the threshold 
+```{r}
+# Thresholds
+threshold_na <- 5                
+threshold_column <- "Age"        
+threshold_other <- 3             
+threshold_imputation <- 0.2      
+
+# Helper function to calculate the mode (excluding NAs)
+getmode <- function(x) {
+  uniqv <- unique(na.omit(x))
+  uniqv[which.max(tabulate(match(x, uniqv)))]
+}
+
+# Step 1: Filter rows based on the number of NAs in the entire row
+cleaned_responses_threshold <- responses %>%
+  filter(rowSums(is.na(.)) <= threshold_na)
+
+# Step 2: Filter rows based on specific column and threshold for other columns
+cleaned_responses_threshold_column <- responses %>%
+  filter(
+    !is.na(!!sym(threshold_column)) & 
+    rowSums(is.na(select(., -!!sym(threshold_column)))) <= threshold_other
+  )
+
+# Step 3: Impute numeric columns with mean if missing values are below the threshold
+for (col in names(responses)) {
+  if (is.numeric(responses[[col]]) &&
+      mean(is.na(responses[[col]])) < threshold_imputation) {
+    responses[[col]] <- ifelse(is.na(responses[[col]]), 
+                               mean(responses[[col]], na.rm = TRUE), 
+                               responses[[col]])
+  }
+}
+
+# Step 4: Impute categorical columns with mode if missing values are below the threshold
+for (col in names(responses)) {
+  if (!is.numeric(responses[[col]]) &&
+      mean(is.na(responses[[col]])) < threshold_imputation) {
+    mode_value <- getmode(responses[[col]])
+    responses[[col]] <- ifelse(is.na(responses[[col]]), 
+                               mode_value, 
+                               responses[[col]])
+  }
+}
+
+# Step 5: Verify the cleaned data
+summary(cleaned_responses_threshold_column)
+
+```
+```{r}
+#  you had commented i do for this do it for age 
+
+age_music <- data[c("Age", "Music")]
+
+age_music <- age_music %>%
+  group_by(Age) %>%
+  summarize(Average = mean(Music))
+
+
+# View the result
+ggplot(age_music, aes(x = Age, y = Average)) + 
+  geom_bar(stat = "identity", fill = "skyblue") + 
+  labs(title = "Music Preference By Age", x = "Age", y = "Average Preference for Music") +
+  theme_minimal()
+
+
+genre<-data[columns[3:19]];
+
+age_genre<-data.frame(data["Age"],genre);
+
+age_genre <- age_genre %>%
+  group_by(Age) %>%
+  summarize(across(where(is.numeric), mean, na.rm = TRUE))
+
+age_genre <- age_genre %>%
+  pivot_longer(cols = -Age, names_to = "Music_Genre", values_to = "Score")
+
+# Plot using ggplot2
+ggplot(age_genre, aes(y = Music_Genre, x = Score, fill = as.factor(Age))) + 
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Music Genre Preference Score by Age",
+       x = "Music Genre",
+       y = "Average Score") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels
+  theme_minimal()
+```
+
+#how music traits affects a person behaviour and vice versa 
+```{r}
+# Subset relevant columns for behavior and music preferences
+behavior_music <- data[, c("Behavior_Trait1", "Behavior_Trait2", "Behavior_Trait3", 3:19)]  
+
+# Calculate correlations between music preferences and behavioral traits
+cor_matrix <- cor(behavior_music, use = "pairwise.complete.obs")
+
+# Visualize the correlation matrix
+corrplot::corrplot(cor_matrix, method = "color", tl.cex = 0.7, number.cex = 0.7, title = "Correlation: Music Preferences vs. Behavior")
+
+# --- Behavior's Impact on Music Preferences ---
+
+# Group data by personality traits and calculate average music preferences
+personality_music <- data %>%
+  group_by(Personality_Trait) %>%  
+  summarize(across(c(3:19), mean, na.rm = TRUE)) %>% 
+  pivot_longer(cols = -Personality_Trait, names_to = "Genre", values_to = "Average_Preference")
+
+# Visualize personality's influence on music preferences
+ggplot(personality_music, aes(x = Genre, y = Average_Preference, fill = Personality_Trait)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = "Music Preferences by Personality Traits",
+    x = "Music Genre",
+    y = "Average Preference",
+    fill = "Personality Trait"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# --- Example Behavioral Insight ---
+
+# Investigate how music preferences correlate with stress levels
+stress_music <- data %>%
+  group_by(Stress_Level) %>%  # Replace with the actual column name for stress levels
+  summarize(across(c(3:19), mean, na.rm = TRUE)) %>%  # Average preferences grouped by stress
+  pivot_longer(cols = -Stress_Level, names_to = "Genre", values_to = "Average_Preference")
+
+# Visualize music preferences at different stress levels
+ggplot(stress_music, aes(x = Genre, y = Average_Preference, color = as.factor(Stress_Level))) +
+  geom_line(size = 1) +
+  labs(
+    title = "Music Preferences by Stress Levels",
+    x = "Music Genre",
+    y = "Average Preference",
+    color = "Stress Level"
+  ) +
+  theme_minimal() +
+```
+
+
+##Conclusion and Limitation
+
+how i handle missing values 
+
+
+
+##References
+
+
+
+#End
